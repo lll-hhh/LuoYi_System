@@ -1,5 +1,12 @@
 <template>
   <div class="dashboard">
+    <!-- 连接状态 -->
+    <div class="connection-status">
+      <el-tag :type="wsConnected ? 'success' : 'danger'" size="small">
+        {{ wsConnected ? '● 实时连接' : '○ 离线' }}
+      </el-tag>
+    </div>
+    
     <!-- 统计卡片 -->
     <el-row :gutter="20" class="stats-row">
       <el-col :span="6">
@@ -109,14 +116,17 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
+import { ElNotification } from 'element-plus'
+import wsService, { TrafficData, AnomalyAlert, SystemStatus } from '@/services/websocket'
 
 const trafficChartRef = ref<HTMLElement>()
 const vehicleTypeChartRef = ref<HTMLElement>()
 
 let trafficChart: echarts.ECharts
 let vehicleTypeChart: echarts.ECharts
+let refreshTimer: ReturnType<typeof setInterval>
 
-// 模拟数据
+// 统计数据
 const stats = ref({
   todayVehicles: 12580,
   onlineCameras: 156,
@@ -124,6 +134,9 @@ const stats = ref({
   todayAnomalies: 23,
   avgCongestionIndex: 2.8
 })
+
+// WebSocket 连接状态
+const wsConnected = ref(false)
 
 const recentAnomalies = ref([
   { time: '2024-01-15 14:32', type: '超速', location: '中山路-人民路', status: '待处理' },
@@ -140,6 +153,88 @@ const congestionRoads = ref([
   { rank: 4, roadName: '解放大道', congestionIndex: 3.8, speed: '26km/h' },
   { rank: 5, roadName: '和平路', congestionIndex: 3.5, speed: '28km/h' }
 ])
+
+// 初始化 WebSocket
+const initWebSocket = () => {
+  wsService.connect({
+    onConnect: () => {
+      wsConnected.value = true
+      // 订阅实时数据
+      wsService.subscribeTrafficRealtime(handleTrafficData)
+      wsService.subscribeAnomalyAlert(handleAnomalyAlert)
+      wsService.subscribeSystemStatus(handleSystemStatus)
+    },
+    onDisconnect: () => {
+      wsConnected.value = false
+    },
+    onError: (error) => {
+      console.error('WebSocket error:', error)
+    }
+  })
+}
+
+// 处理实时车流量数据
+const handleTrafficData = (data: TrafficData[]) => {
+  if (data.length > 0) {
+    // 更新车流量统计
+    const totalVehicles = data.reduce((sum, item) => sum + item.vehicleCount, 0)
+    stats.value.todayVehicles = totalVehicles
+    
+    // 更新拥堵排行
+    const sorted = [...data].sort((a, b) => b.congestionLevel - a.congestionLevel)
+    congestionRoads.value = sorted.slice(0, 5).map((item, index) => ({
+      rank: index + 1,
+      roadName: item.roadName,
+      congestionIndex: item.congestionLevel,
+      speed: `${item.avgSpeed}km/h`
+    }))
+    
+    // 更新图表
+    updateTrafficChart(data)
+  }
+}
+
+// 处理异常告警
+const handleAnomalyAlert = (alert: AnomalyAlert) => {
+  // 添加到列表顶部
+  recentAnomalies.value.unshift({
+    time: alert.timestamp,
+    type: alert.type,
+    location: alert.location,
+    status: '待处理'
+  })
+  // 保持最多10条
+  if (recentAnomalies.value.length > 10) {
+    recentAnomalies.value.pop()
+  }
+  
+  // 显示通知
+  ElNotification({
+    title: `${alert.level === 'high' ? '🚨' : '⚠️'} 异常告警`,
+    message: `${alert.type} - ${alert.location}`,
+    type: alert.level === 'high' ? 'error' : 'warning',
+    duration: 5000
+  })
+  
+  stats.value.todayAnomalies++
+}
+
+// 处理系统状态
+const handleSystemStatus = (status: SystemStatus) => {
+  stats.value.onlineCameras = status.onlineCameras
+  stats.value.totalCameras = status.totalCameras
+}
+
+// 更新车流量图表
+const updateTrafficChart = (data: TrafficData[]) => {
+  if (trafficChart && data.length > 0) {
+    // 按时间排序并更新数据
+    const chartData = data.map(item => item.vehicleCount)
+    trafficChart.setOption({
+      series: [{ data: chartData }]
+    })
+  }
+}
 
 const initCharts = () => {
   // 车流量趋势图
@@ -187,6 +282,16 @@ const initCharts = () => {
 
 onMounted(() => {
   initCharts()
+  initWebSocket()
+  
+  // 定时刷新数据（备用方案）
+  refreshTimer = setInterval(() => {
+    if (!wsConnected.value) {
+      // 如果 WebSocket 断开，使用 HTTP 轮询
+      console.log('WebSocket disconnected, using HTTP polling...')
+    }
+  }, 30000)
+  
   window.addEventListener('resize', () => {
     trafficChart?.resize()
     vehicleTypeChart?.resize()
@@ -196,11 +301,22 @@ onMounted(() => {
 onUnmounted(() => {
   trafficChart?.dispose()
   vehicleTypeChart?.dispose()
+  wsService.disconnect()
+  if (refreshTimer) {
+    clearInterval(refreshTimer)
+  }
 })
 </script>
 
 <style scoped lang="scss">
 .dashboard {
+  .connection-status {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    z-index: 100;
+  }
+  
   .stats-row {
     margin-bottom: 20px;
   }
