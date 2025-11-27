@@ -22,14 +22,25 @@ import java.util.List;
 public class CameraServiceImpl extends ServiceImpl<CameraMapper, Camera> implements CameraService {
 
     @Override
-    public PageResult<Camera> findPage(Integer page, Integer size, Integer roadId, String status, String onlineStatus) {
-        IPage<Camera> pageResult = baseMapper.findPage(new Page<>(page, size), roadId, status, onlineStatus);
+    public PageResult<Camera> findPage(Integer pageNum, Integer pageSize, Integer roadId, String status, String onlineStatus) {
+        LambdaQueryWrapper<Camera> wrapper = new LambdaQueryWrapper<>();
+        if (roadId != null) {
+            wrapper.eq(Camera::getRoadId, roadId);
+        }
+        if (status != null) {
+            wrapper.eq(Camera::getStatus, status);
+        }
+        if (onlineStatus != null) {
+            wrapper.eq(Camera::getOnlineStatus, onlineStatus);
+        }
+        wrapper.orderByDesc(Camera::getCameraId);
+        IPage<Camera> pageResult = page(new Page<>(pageNum, pageSize), wrapper);
         return PageResult.of(pageResult);
     }
 
     @Override
     public Camera findById(Integer cameraId) {
-        return baseMapper.findById(cameraId);
+        return getById(cameraId);
     }
 
     @Override

@@ -12,21 +12,6 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface EmployeeMapper extends BaseMapper<Employee> {
 
-    @Select("""
-            SELECT e.*, d.department_name, r.role_name, r.role_code
-            FROM employee e
-            LEFT JOIN department d ON e.department_id = d.department_id
-            LEFT JOIN role r ON e.role_id = r.role_id
-            WHERE e.username = #{username}
-            """)
+    @Select("SELECT * FROM employee WHERE username = #{username}")
     Employee findByUsername(@Param("username") String username);
-
-    @Select("""
-            SELECT e.*, d.department_name, r.role_name, r.role_code
-            FROM employee e
-            LEFT JOIN department d ON e.department_id = d.department_id
-            LEFT JOIN role r ON e.role_id = r.role_id
-            WHERE e.employee_id = #{employeeId}
-            """)
-    Employee findById(@Param("employeeId") Integer employeeId);
 }

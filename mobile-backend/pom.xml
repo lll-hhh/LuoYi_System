@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.2</version>
+        <version>2.7.18</version>
         <relativePath/>
     </parent>
 
@@ -19,10 +19,10 @@
     <description>络绎智慧交通管理系统 - 移动端后端</description>
 
     <properties>
-        <java.version>21</java.version>
-        <mybatis-plus.version>3.5.5</mybatis-plus.version>
-        <jwt.version>0.12.3</jwt.version>
-        <springdoc.version>2.3.0</springdoc.version>
+        <java.version>1.8</java.version>
+        <mybatis-plus.version>3.5.3.1</mybatis-plus.version>
+        <jwt.version>0.11.5</jwt.version>
+        <springdoc.version>1.7.0</springdoc.version>
     </properties>
 
     <dependencies>
@@ -58,7 +58,7 @@
         <!-- MyBatis Plus -->
         <dependency>
             <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>${mybatis-plus.version}</version>
         </dependency>
 
@@ -84,7 +84,7 @@
         <!-- OpenAPI/Swagger -->
         <dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <artifactId>springdoc-openapi-ui</artifactId>
             <version>${springdoc.version}</version>
         </dependency>
 
