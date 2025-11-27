@@ -73,6 +73,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  void _showDocumentDialog(String title, String content) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Text(content, style: const TextStyle(height: 1.4)),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('关闭'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  static const _userAgreement = '''
+1. 您需保证提供的所有注册信息真实有效，如有变更请及时更新；
+2. 络绎仅用于合法运输及道路管理场景，请勿发布违规信息；
+3. 我们将根据业务需要向您推送调度、预警等通知，您可在设置中管理；
+4. 如需注销，可通过客服渠道提交申请并在 7 个工作日内处理。''';
+
+  static const _privacyPolicy = '''
+1. 我们仅收集完成货运与监管所必需的数据，如姓名、联系方式、车辆信息等；
+2. 位置信息仅在执行任务或主动上报时上传，用于调度与安全审计；
+3. 所有数据均进行加密存储，敏感操作具备访问审计；
+4. 您可随时联系 support@luoyi.com 申请导出或删除个人数据（符合法律法规）。''';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -211,7 +246,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           GestureDetector(
                             onTap: () {
-                              // TODO: 用户协议
+                              _showDocumentDialog('用户协议', _userAgreement);
                             },
                             child: const Text(
                               '《用户协议》',
@@ -224,7 +259,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           GestureDetector(
                             onTap: () {
-                              // TODO: 隐私政策
+                              _showDocumentDialog('隐私政策', _privacyPolicy);
                             },
                             child: const Text(
                               '《隐私政策》',

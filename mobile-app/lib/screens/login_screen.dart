@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:luoyi_mobile/config/theme.dart';
@@ -46,6 +47,78 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     }
   }
+
+  void _showForgotPasswordSheet() {
+    final contactController = TextEditingController(text: _phoneControllerHint);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '找回密码',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                '请填写注册手机号，我们的客服会在 1 个工作日内联系您完成身份核验并重置密码。',
+                style: TextStyle(color: AppTheme.textSecondary),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: contactController,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(
+                  labelText: '预留手机号',
+                  prefixIcon: Icon(Icons.phone_outlined),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Clipboard.setData(const ClipboardData(text: 'support@luoyi.com'));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('客服邮箱已复制：support@luoyi.com')),
+                        );
+                      },
+                      icon: const Icon(Icons.copy_outlined),
+                      label: const Text('复制客服邮箱'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(contactController.text.trim());
+                      },
+                      child: const Text('提交申请'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    ).whenComplete(() => contactController.dispose());
+  }
+
+  String get _phoneControllerHint => _usernameController.text.isNotEmpty
+      ? _usernameController.text
+      : '';
 
   @override
   Widget build(BuildContext context) {
@@ -140,9 +213,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {
-                      // TODO: 忘记密码
-                    },
+                    onPressed: _showForgotPasswordSheet,
                     child: const Text('忘记密码？'),
                   ),
                 ),

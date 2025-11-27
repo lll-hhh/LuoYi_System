@@ -15,9 +15,7 @@ class HomeScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.qr_code_scanner),
-            onPressed: () {
-              // TODO: 扫码功能
-            },
+            onPressed: () => _handleScan(context),
           ),
         ],
       ),
@@ -169,6 +167,82 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _handleScan(BuildContext context) async {
+    final result = await _openScanSheet(context);
+    if (result == null || result.isEmpty) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('扫码结果：$result')),
+    );
+
+    // 根据解析内容跳转，简单示例：识别以 CG 开头的申报单号
+    if (result.startsWith('CG')) {
+      context.push('/cargo/detail', extra: result);
+    }
+  }
+
+  Future<String?> _openScanSheet(BuildContext context) async {
+    final controller = TextEditingController();
+    final value = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '扫描或手动录入',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                '暂未接入硬件扫码，可手动输入二维码/条形码结果，系统将自动匹配申报或任务。',
+                style: TextStyle(color: AppTheme.textSecondary),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                decoration: const InputDecoration(
+                  labelText: '输入任务号/二维码内容',
+                  prefixIcon: Icon(Icons.confirmation_number_outlined),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: const Text('取消'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
+                      child: const Text('确定'),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        );
+      },
+    );
+    controller.dispose();
+    return value;
   }
 
   Widget _buildQuickAction(

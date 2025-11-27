@@ -28,6 +28,11 @@ public class LocationWebSocketHandler extends TextWebSocketHandler {
     // 存储用户ID和会话的映射
     private final Map<Long, String> userSessionMap = new ConcurrentHashMap<>();
 
+    // 存储会话角色：driver/admin
+    private final Map<String, String> sessionRoles = new ConcurrentHashMap<>();
+
+    private final java.util.Set<String> adminSessions = ConcurrentHashMap.newKeySet();
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -69,6 +74,8 @@ public class LocationWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         String sessionId = session.getId();
         sessions.remove(sessionId);
+        sessionRoles.remove(sessionId);
+        adminSessions.remove(sessionId);
         
         // 移除用户映射
         userSessionMap.entrySet().removeIf(entry -> entry.getValue().equals(sessionId));
@@ -87,9 +94,26 @@ public class LocationWebSocketHandler extends TextWebSocketHandler {
      */
     private void handleAuth(WebSocketSession session, Map<String, Object> data) throws IOException {
         Long userId = ((Number) data.get("userId")).longValue();
-        userSessionMap.put(userId, session.getId());
-    sendMessage(session, createMessage("auth_success", Collections.singletonMap("userId", userId)));
-        logger.info("用户认证成功: {}", userId);
+        String sessionId = session.getId();
+        String clientType = "driver";
+        Object clientTypeValue = data.get("clientType");
+        if (clientTypeValue != null) {
+            clientType = clientTypeValue.toString().toLowerCase();
+        }
+
+        sessionRoles.put(sessionId, clientType);
+        if (isAdminClient(clientType)) {
+            adminSessions.add(sessionId);
+        } else {
+            adminSessions.remove(sessionId);
+        }
+
+        userSessionMap.put(userId, sessionId);
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("userId", userId);
+        payload.put("clientType", clientType);
+        sendMessage(session, createMessage("auth_success", payload));
+        logger.info("用户认证成功: {} ({})", userId, clientType);
     }
 
     /**
@@ -128,8 +152,35 @@ public class LocationWebSocketHandler extends TextWebSocketHandler {
      * 广播消息给所有管理员
      */
     public void broadcastToAdmins(String message) {
-        // TODO: 实现管理员筛选逻辑
-        broadcast(message);
+        if (adminSessions.isEmpty()) {
+            logger.debug("无管理员在线，广播消息给所有会话");
+            broadcast(message);
+            return;
+        }
+        adminSessions.forEach(sessionId -> {
+            WebSocketSession session = sessions.get(sessionId);
+            if (session != null && session.isOpen()) {
+                try {
+                    sendMessage(session, message);
+                } catch (IOException e) {
+                    logger.error("推送管理员消息失败: {}", e.getMessage());
+                }
+            }
+        });
+    }
+
+    private boolean isAdminClient(String clientType) {
+        if (clientType == null) {
+            return false;
+        }
+        switch (clientType.toLowerCase()) {
+            case "admin":
+            case "monitor":
+            case "dispatcher":
+                return true;
+            default:
+                return false;
+        }
     }
 
     /**
