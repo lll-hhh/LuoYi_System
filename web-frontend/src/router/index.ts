@@ -129,6 +129,12 @@ const routes: RouteRecordRaw[] = [
             name: 'Role',
             component: () => import('@/views/system/role/index.vue'),
             meta: { title: '角色管理' }
+          },
+          {
+            path: 'task',
+            name: 'Task',
+            component: () => import('@/views/system/task/index.vue'),
+            meta: { title: '任务管理' }
           }
         ]
       }
