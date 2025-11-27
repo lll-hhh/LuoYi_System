@@ -63,10 +63,10 @@ public class DriverServiceImpl extends ServiceImpl<DriverMapper, Driver> impleme
         if (status != null && !status.isEmpty()) {
             wrapper.eq(Driver::getStatus, status);
         }
-        if (keyword != null && !keyword.isEmpty()) {
-            wrapper.and(w -> w.like(Driver::getName, keyword)
-                    .or().like(Driver::getPhone, keyword)
-                    .or().like(Driver::getDriverLicenseNo, keyword));
+    if (keyword != null && !keyword.isEmpty()) {
+        wrapper.and(w -> w.like(Driver::getName, keyword)
+            .or().like(Driver::getPhone, keyword)
+            .or().like(Driver::getLicenseNo, keyword));
         }
         wrapper.orderByDesc(Driver::getCreatedAt);
         
@@ -179,8 +179,8 @@ public class DriverServiceImpl extends ServiceImpl<DriverMapper, Driver> impleme
         if (driver.getCurrentVehicleId() != null) {
             Vehicle vehicle = vehicleMapper.selectById(driver.getCurrentVehicleId());
             if (vehicle != null) {
-                vo.setVehiclePlate(vehicle.getPlateNumber());
-                vo.setVehicleType(vehicle.getVehicleType());
+                vo.setCurrentVehiclePlate(vehicle.getPlateNumber());
+                vo.setCurrentVehicleType(vehicle.getVehicleTypeName());
             }
         }
         

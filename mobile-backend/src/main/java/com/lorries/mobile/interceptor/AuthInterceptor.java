@@ -1,5 +1,7 @@
 package com.lorries.mobile.interceptor;
 
+import com.lorries.mobile.entity.Driver;
+import com.lorries.mobile.mapper.DriverMapper;
 import com.lorries.mobile.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,9 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private DriverMapper driverMapper;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -44,6 +49,13 @@ public class AuthInterceptor implements HandlerInterceptor {
         Long userId = jwtUtil.getUserIdFromToken(token);
         request.setAttribute("userId", userId);
         request.setAttribute("username", jwtUtil.getUsernameFromToken(token));
+
+        if (userId != null) {
+            Driver driver = driverMapper.findByUserId(userId);
+            if (driver != null) {
+                request.setAttribute("driverId", driver.getId());
+            }
+        }
 
         return true;
     }

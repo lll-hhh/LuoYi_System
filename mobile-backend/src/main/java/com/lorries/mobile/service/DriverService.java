@@ -5,6 +5,8 @@ import com.lorries.mobile.common.result.PageResult;
 import com.lorries.mobile.dto.DriverVO;
 import com.lorries.mobile.entity.Driver;
 
+import java.util.List;
+
 /**
  * 司机服务接口
  */
@@ -46,12 +48,17 @@ public interface DriverService extends IService<Driver> {
     void unbindVehicle(Long driverId);
 
     /**
-     * 获取在线司机列表
-     */
-    PageResult<DriverVO> getOnlineDrivers(Integer page, Integer pageSize);
-
-    /**
      * 获取空闲司机列表
      */
-    PageResult<DriverVO> getAvailableDrivers(Integer page, Integer pageSize);
+    List<DriverVO> getAvailableDrivers();
+
+    /**
+     * 获取司机完成任务数
+     */
+    Integer getCompletedTaskCount(Long driverId);
+
+    /**
+     * 获取司机累计里程
+     */
+    Double getTotalMileage(Long driverId);
 }

@@ -25,6 +25,7 @@ public class DriverVO {
 
     private Long currentVehicleId;
     private String currentVehiclePlate;
+    private String currentVehicleType;
     private Long currentTaskId;
     private String currentTaskNo;
 

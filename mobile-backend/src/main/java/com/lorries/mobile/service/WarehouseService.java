@@ -1,6 +1,7 @@
 package com.lorries.mobile.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.lorries.mobile.common.result.PageResult;
 import com.lorries.mobile.entity.Warehouse;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public interface WarehouseService extends IService<Warehouse> {
     /**
      * 获取仓库列表
      */
-    List<Warehouse> getWarehouseList(String status, String warehouseType);
+    PageResult<Warehouse> getWarehouseList(String status, String keyword, Integer page, Integer pageSize);
 
     /**
      * 获取仓库详情
@@ -21,17 +22,22 @@ public interface WarehouseService extends IService<Warehouse> {
     Warehouse getWarehouseDetail(Long warehouseId);
 
     /**
-     * 根据位置获取最近的仓库
+     * 获取活跃仓库
      */
-    Warehouse getNearestWarehouse(Double longitude, Double latitude);
+    List<Warehouse> getActiveWarehouses();
 
     /**
-     * 获取指定范围内的仓库
+     * 获取附近仓库
      */
-    List<Warehouse> getWarehousesInRange(Double longitude, Double latitude, Double radiusKm);
+    List<Warehouse> getNearbyWarehouses(Double longitude, Double latitude, Double radiusKm);
 
     /**
      * 更新仓库容量
      */
     void updateCapacity(Long warehouseId, Integer usedCapacity);
+
+    /**
+     * 获取仓库可用容量
+     */
+    Integer getAvailableCapacity(Long warehouseId);
 }

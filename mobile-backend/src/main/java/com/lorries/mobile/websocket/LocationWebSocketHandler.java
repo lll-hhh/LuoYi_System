@@ -9,6 +9,8 @@ import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -59,7 +61,7 @@ public class LocationWebSocketHandler extends TextWebSocketHandler {
             }
         } catch (Exception e) {
             logger.error("处理消息失败: {}", e.getMessage());
-            sendMessage(session, createMessage("error", Map.of("message", e.getMessage())));
+            sendMessage(session, createMessage("error", Collections.singletonMap("message", e.getMessage())));
         }
     }
 
@@ -86,7 +88,7 @@ public class LocationWebSocketHandler extends TextWebSocketHandler {
     private void handleAuth(WebSocketSession session, Map<String, Object> data) throws IOException {
         Long userId = ((Number) data.get("userId")).longValue();
         userSessionMap.put(userId, session.getId());
-        sendMessage(session, createMessage("auth_success", Map.of("userId", userId)));
+    sendMessage(session, createMessage("auth_success", Collections.singletonMap("userId", userId)));
         logger.info("用户认证成功: {}", userId);
     }
 
@@ -97,10 +99,10 @@ public class LocationWebSocketHandler extends TextWebSocketHandler {
         LocationReportRequest location = objectMapper.convertValue(data.get("data"), LocationReportRequest.class);
         
         // 广播位置更新给管理端
-        broadcastToAdmins(createMessage("location_update", Map.of(
-                "vehicleId", data.get("vehicleId"),
-                "location", location
-        )));
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("vehicleId", data.get("vehicleId"));
+    payload.put("location", location);
+    broadcastToAdmins(createMessage("location_update", payload));
         
         sendMessage(session, createMessage("location_ack", null));
     }

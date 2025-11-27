@@ -329,27 +329,212 @@ LuoYi_System/
 <tr>
 <td align="center">150+</td>
 <td align="center">15,000+</td>
-<td align="center">67</td>
-<td align="center">10</td>
+<p align="center">
+  <img src="https://img.shields.io/badge/%E7%BB%9C%E7%BB%8E-Lorries-blue?style=for-the-badge&logo=truck&logoColor=white" alt="Lorries Logo" />
+</p>
+
+<h1 align="center">🚛 络绎 · 智慧交通与物流中枢</h1>
+
+<p align="center">“一套代码，串起城市道路、仓储枢纽、停车资产与移动司机。”</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Spring%20Boot-2.7.x-6DB33F?style=flat-square&logo=springboot" alt="Spring Boot"/>
+  <img src="https://img.shields.io/badge/FastAPI-0.110-05998B?style=flat-square&logo=fastapi" alt="FastAPI"/>
+  <img src="https://img.shields.io/badge/Vue-3.x-42b883?style=flat-square&logo=vue.js" alt="Vue"/>
+  <img src="https://img.shields.io/badge/Flutter-3.x-02569B?style=flat-square&logo=flutter" alt="Flutter"/>
+  <img src="https://img.shields.io/badge/PostgreSQL-16-336791?style=flat-square&logo=postgresql" alt="PostgreSQL"/>
+  <img src="https://img.shields.io/badge/Docker%20Compose-Full%20Stack-2496ED?style=flat-square&logo=docker" alt="Docker"/>
+</p>
+
+<p align="center">
+  <a href="#-项目综述">项目综述</a> ·
+  <a href="#-亮点速览">亮点速览</a> ·
+  <a href="#-功能矩阵">功能矩阵</a> ·
+  <a href="#-系统架构">系统架构</a> ·
+  <a href="#-快速开始">快速开始</a> ·
+  <a href="#-开发与测试">开发与测试</a>
+</p>
+
+---
+
+## 📖 项目综述
+
+**络绎（Lorries）** 是一套端到端的智慧交通管理平台，面向城市道路治理、物流园区调度与多仓一体化运营。平台由 Web 管控台 + 移动端应用 + 算法服务 + IoT 接入组成，具备高并发能力与良好的横向扩展性，可覆盖道路监控、仓储履约、停车资产、司机服务等典型场景。
+
+> 🧭 愿景：让交通参与者「可感知、可协同、可预测」。
+
+---
+
+## ✨ 亮点速览
+
+<table>
+<tr>
+  <td><b>🛰️ 全域感知</b><br/>道路、仓库、停车、司机四大域统一建模，实时采集并入库。</td>
+  <td><b>🧠 AI 算法中心</b><br/>FastAPI 算法服务封装路线规划、异常检测、调度优化、需求预测。</td>
+</tr>
+<tr>
+  <td><b>📱 移动优先</b><br/>Flutter App 支持司机注册、车辆管理、货运申报与智能路线。</td>
+  <td><b>📊 可观测性</b><br/>Prometheus 指标、WebSocket 实时推送、分布式日志确保可追溯。</td>
 </tr>
 </table>
 
 ---
 
-## 🔧 开发指南
+## 🧩 功能矩阵
 
-<details>
-<summary><b>后端开发</b></summary>
+| 模块 | 能力 | 亮点 |
+| --- | --- | --- |
+| 📦 仓储管理 | 多仓多库区、入出库流转、容量预警、轨迹追踪 | 动态容量计算 + 可视化大屏 |
+| 🛣️ 道路监控 | 车流监控、异常上报、IoT 摄像头接入 | WebSocket 实时态势、事件复盘 |
+| 🅿️ 停车资产 | 车位监测、计费策略、黑名单管控 | 计费引擎与电子票据接口 |
+| 👥 员工与司机 | 组织结构、排班考勤、司机档案、车辆绑定 | 司机端定位上报 + 任务提醒 |
+| � 货运移动端 | 在线申报、路线规划、路况订阅 | Flutter + WebSocket 低延迟交互 |
+| 🧮 算法服务 | 路线多目标优化、调度评分、异常检测、需求预测 | 纯 Docker 运行，配套 pytest 与指标 |
+
+---
+
+## 🏗️ 系统架构
+
+```
+                                    ┌─────────────────┐
+                                    │     Nginx       │
+                                    │   (80 / 443)    │
+                                    └────────┬────────┘
+                                             │
+           ┌─────────────────────────────────┼─────────────────────────────────┐
+           │                                 │                                 │
+           ▼                                 ▼                                 ▼
+┌─────────────────────┐         ┌─────────────────────┐         ┌─────────────────────┐
+│   Web Frontend      │         │    Hub Backend      │         │   Mobile Backend    │
+│   Vue 3 + Vite      │         │   Spring Boot       │         │   Spring Boot       │
+│      :3000          │         │      :8081          │         │      :8082          │
+└─────────────────────┘         └──────────┬──────────┘         └──────────┬──────────┘
+                                           │                               │
+                          ┌────────────────┼───────────────────────────────┤
+                          │                │                               │
+                          ▼                ▼                               ▼
+              ┌───────────────────┐ ┌─────────────────────────────────────────────────┐
+              │  Algorithm Svc    │ │              PostgreSQL Cluster                 │
+              │  FastAPI/Python   │ │     Hub DB (:5432)    Mobile DB (:5433)         │
+              │     :8090         │ └─────────────────────────────────────────────────┘
+              └───────────────────┘                        │
+                                          ┌────────────────┴────────────────┐
+                                          │                                 │
+                                          ▼                                 ▼
+                                ┌─────────────────┐               ┌─────────────────┐
+                                │     Redis       │               │    RabbitMQ     │
+                                │     :6379       │               │     :5672       │
+                                └─────────────────┘               └─────────────────┘
+                                          │
+                                          ▼
+                                ┌─────────────────┐
+                                │      MinIO      │
+                                │   :9000/:9001   │
+                                └─────────────────┘
+```
+
+---
+
+## 🛠️ 技术栈
+
+| 层级 | 技术选型 | 说明 |
+| --- | --- | --- |
+| 后端 | Java 17 · Spring Boot 2.7 · MyBatis-Plus · Spring Security · JWT | 枢纽与移动双后台，提供 REST & WebSocket |
+| 算法服务 | Python 3.11 · FastAPI 0.110 · Uvicorn · Prometheus client | 纯 Docker 运行，提供路线/调度/异常/预测 API |
+| Web 前端 | Vue 3 · Vite 5 · Element Plus · Pinia · ECharts | 管理驾驶舱与数据大屏 |
+| 移动端 | Flutter 3 · Dart 3 · GoRouter · Dio | 司机端申报、轨迹、消息提醒 |
+| 数据与中间件 | PostgreSQL 16 · Redis 7 · RabbitMQ 3 · MinIO latest | 主备数据库、缓存、消息、对象存储 |
+| 基础设施 | Docker Compose · Nginx · GitHub Actions (可扩展) | 一键编排与 CI/CD 预留 |
+
+---
+
+## 🚀 快速开始
+
+### 0. 环境准备
+
+- Docker ≥ 24.0
+- Docker Compose ≥ 2.0
+- 8 GB 以上可用内存
+
+### 1. 克隆仓库
 
 ```bash
-cd hub-backend  # 或 mobile-backend
+git clone https://github.com/lll-hhh/LuoYi_System.git
+cd LuoYi_System
+```
+
+### 2. 启动全栈（推荐）
+
+```bash
+docker-compose up -d
+docker-compose ps
+```
+
+### 3. 定向运行
+
+```bash
+# 仅启动算法服务（⚠️ Python 只能在容器中运行）
+docker-compose up -d algorithm-service --build
+
+# 仅启动移动端后台
+docker-compose up -d mobile-backend
+```
+
+### 4. 常用入口
+
+| 服务 | 地址 | 说明 |
+| --- | --- | --- |
+| 🌐 管理后台 | http://localhost | Web 端入口 |
+| 📚 Hub API 文档 | http://localhost:8081/swagger-ui.html | 枢纽 REST API |
+| 📚 Mobile API 文档 | http://localhost:8082/swagger-ui.html | 司机/货运 API |
+| 🤖 Algorithm Docs | http://localhost:8090/docs | FastAPI 文档 |
+| 🐰 RabbitMQ Console | http://localhost:15672 | guest / guest |
+| 📦 MinIO Console | http://localhost:9001 | admin / luoyi123456 |
+
+### 5. 默认账号
+
+| 系统 | 账号 | 密码 |
+| --- | --- | --- |
+| Web 管理后台 | admin | admin123 |
+| PostgreSQL | luoyi | luoyi123456 |
+| MinIO | admin | luoyi123456 |
+
+---
+
+## 📂 项目结构
+
+```
+LuoYi_System/
+├── docker-compose.yml          # 一键编排入口
+├── .env                        # 环境变量示例
+├── database/                   # DDL & 初始化数据
+│   ├── hub/                    # 枢纽端（56 张表）
+│   └── mobile/                 # 移动端（11 张表）
+├── hub-backend/                # 管理端 Spring Boot 服务
+├── mobile-backend/             # 司机/货运 Spring Boot 服务
+├── algorithm-service/          # FastAPI 算法中心（仅 Docker）
+├── web-frontend/               # Vue 3 管理前端
+├── mobile-app/                 # Flutter 司机 App
+└── nginx/                      # 网关与静态托管
+```
+
+---
+
+## 🧪 开发与测试
+
+<details>
+<summary><b>后端（Hub & Mobile）</b></summary>
+
+```bash
+cd hub-backend   # 或 mobile-backend
+mvn -q test
 ./mvnw spring-boot:run
 ```
 
 </details>
 
 <details>
-<summary><b>前端开发</b></summary>
+<summary><b>Web 前端</b></summary>
 
 ```bash
 cd web-frontend
@@ -357,6 +542,59 @@ npm install
 npm run dev
 ```
 
+</details>
+
+<details>
+<summary><b>移动 App</b></summary>
+
+```bash
+cd mobile-app
+flutter pub get
+flutter pub run build_runner build
+flutter run
+```
+
+</details>
+
+<details>
+<summary><b>算法服务（Docker Only）</b></summary>
+
+```bash
+cd algorithm-service
+docker build -t luoyi-algorithm:dev .
+docker run --rm -it \
+  -p 8090:8090 \
+  --env-file ../.env \
+  --name luoyi-algorithm-dev \
+  luoyi-algorithm:dev
+
+# 集成测试
+docker-compose up -d algorithm-service --build
+docker-compose exec algorithm-service pytest -q
+```
+
+</details>
+
+---
+
+## 🛡️ 可观测 & 保障
+
+- **实时推送**：WebSocket 通知与司机定位流。
+- **指标采集**：FastAPI + Spring Boot 暴露 `/metrics`，可直接接入 Prometheus + Grafana。
+- **日志治理**：分层日志分类输出，生产可接驳 ELK/EFK。
+- **安全控制**：JWT + 细粒度角色、MinIO 临时凭证、Redis OTP 双重校验。
+
+---
+
+## 🤝 贡献指南 & 许可
+
+1. Fork 仓库并创建特性分支。
+2. 确保通过 `mvn -q test` / `docker-compose exec algorithm-service pytest -q`。
+3. 提交 PR 并附带模块说明或截图。
+
+项目采用 [MIT License](LICENSE)，欢迎商用、二次开发与共建。
+
+---
 </details>
 
 <details>
@@ -376,10 +614,17 @@ flutter run
 
 ```bash
 cd algorithm-service
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8090
+docker build -t luoyi-algorithm:dev .
+docker run --rm -it \
+  -p 8090:8090 \
+  --name luoyi-algorithm-dev \
+  luoyi-algorithm:dev
+
+# 或在项目根目录使用 docker-compose（推荐带监控的本地联调）
+docker-compose up -d algorithm-service --build
+
+# 执行单元测试
+docker-compose exec algorithm-service pytest -q
 ```
 
 </details>

@@ -2,17 +2,27 @@
 
 算法服务为整个平台提供路线规划、调度优化、异常检测与需求预测等智能算法接口，基于 FastAPI 封装统一的 HTTP API，并配套 Prometheus 指标、pytest 用例。
 
-## 快速开始
+## 快速开始（仅限 Docker）
+
+> ⚠️ **说明**：算法服务不再支持在宿主机直接运行 Python 进程，所有调试与测试必须通过 Docker 容器完成，以保持与生产环境一致。
 
 ```bash
-# 安装依赖
-pip install -r requirements.txt
+# 构建镜像（位于仓库根目录）
+cd algorithm-service
+docker build -t luoyi-algorithm:dev .
 
-# 启动服务
-uvicorn main:app --reload --port 8090
+# 启动单服务容器
+docker run --rm -it \
+	-p 8090:8090 \
+	--env-file ../.env \
+	--name luoyi-algorithm-dev \
+	luoyi-algorithm:dev
+
+# 或使用 docker-compose（在仓库根目录）
+docker-compose up -d algorithm-service --build
 
 # 运行测试
-pytest -q
+docker-compose exec algorithm-service pytest -q
 ```
 
 ## 主要功能
@@ -41,6 +51,6 @@ pytest -q
 
 ## 提交前检查
 
-1. 运行 `pytest` 确保接口基础用例通过。
+1. 运行 `docker-compose exec algorithm-service pytest -q` 确保接口基础用例通过。
 2. 如修改依赖，请同步更新 `requirements.txt`。
 3. 推荐通过 `uvicorn main:app --reload` 本地联调 API。

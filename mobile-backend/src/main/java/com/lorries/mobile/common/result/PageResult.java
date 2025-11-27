@@ -21,6 +21,14 @@ public class PageResult<T> {
     private Long current;
     private Long pages;
 
+    public PageResult(List<T> records, Long total) {
+        this.records = records;
+        this.total = total;
+        this.size = null;
+        this.current = null;
+        this.pages = null;
+    }
+
     public static <T> PageResult<T> of(IPage<T> page) {
         return new PageResult<>(
                 page.getRecords(),

@@ -41,7 +41,7 @@ public class WarehouseServiceImpl extends ServiceImpl<WarehouseMapper, Warehouse
         if (keyword != null && !keyword.isEmpty()) {
             wrapper.and(w -> w.like(Warehouse::getName, keyword)
                     .or().like(Warehouse::getAddress, keyword)
-                    .or().like(Warehouse::getContactPhone, keyword));
+                    .or().like(Warehouse::getManagerPhone, keyword));
         }
         wrapper.orderByDesc(Warehouse::getCreatedAt);
         
@@ -80,7 +80,10 @@ public class WarehouseServiceImpl extends ServiceImpl<WarehouseMapper, Warehouse
         if (warehouse == null) {
             throw new ResourceNotFoundException("仓库", warehouseId);
         }
-        if (usedCapacity > warehouse.getTotalCapacity()) {
+        if (warehouse.getCapacity() == null) {
+            throw new BusinessException("仓库总容量未设置");
+        }
+        if (usedCapacity > warehouse.getCapacity()) {
             throw new BusinessException("使用容量不能超过总容量");
         }
         
@@ -95,6 +98,10 @@ public class WarehouseServiceImpl extends ServiceImpl<WarehouseMapper, Warehouse
         if (warehouse == null) {
             throw new ResourceNotFoundException("仓库", warehouseId);
         }
-        return warehouse.getTotalCapacity() - warehouse.getUsedCapacity();
+        if (warehouse.getCapacity() == null) {
+            throw new BusinessException("仓库总容量未设置");
+        }
+        int used = warehouse.getUsedCapacity() == null ? 0 : warehouse.getUsedCapacity();
+        return warehouse.getCapacity() - used;
     }
 }

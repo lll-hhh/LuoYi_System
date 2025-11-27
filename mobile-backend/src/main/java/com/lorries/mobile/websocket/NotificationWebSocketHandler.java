@@ -8,6 +8,7 @@ import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -115,15 +116,15 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler {
 
     private String createNotification(String title, String content, String type) {
         try {
-            return objectMapper.writeValueAsString(Map.of(
-                    "type", "notification",
-                    "data", Map.of(
-                            "title", title,
-                            "content", content,
-                            "notificationType", type
-                    ),
-                    "timestamp", System.currentTimeMillis()
-            ));
+            Map<String, Object> message = new HashMap<>();
+            message.put("type", "notification");
+            Map<String, Object> data = new HashMap<>();
+            data.put("title", title);
+            data.put("content", content);
+            data.put("notificationType", type);
+            message.put("data", data);
+            message.put("timestamp", System.currentTimeMillis());
+            return objectMapper.writeValueAsString(message);
         } catch (Exception e) {
             return "{}";
         }
@@ -131,11 +132,11 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler {
 
     private String createResponse(String type, Object data) {
         try {
-            return objectMapper.writeValueAsString(Map.of(
-                    "type", type,
-                    "data", data,
-                    "timestamp", System.currentTimeMillis()
-            ));
+            Map<String, Object> message = new HashMap<>();
+            message.put("type", type);
+            message.put("data", data);
+            message.put("timestamp", System.currentTimeMillis());
+            return objectMapper.writeValueAsString(message);
         } catch (Exception e) {
             return "{}";
         }
