@@ -1,0 +1,28 @@
+# RTMP视频流服务器 Dockerfile
+FROM tiangolo/nginx-rtmp:latest
+
+# 安装FFmpeg用于视频转码
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# 创建必要目录
+RUN mkdir -p /var/www/hls \
+    && mkdir -p /var/www/recordings \
+    && mkdir -p /var/www/rtmp \
+    && chmod -R 755 /var/www
+
+# 复制配置文件
+COPY nginx-rtmp.conf /etc/nginx/nginx.conf
+COPY rtmp/stat.xsl /var/www/rtmp/stat.xsl
+
+# 暴露端口
+# 1935: RTMP推流端口
+# 8088: HLS播放端口
+EXPOSE 1935 8088
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8088/health || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]

@@ -9,12 +9,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * 货物申报控制器
  */
 @Tag(name = "货物申报", description = "货物运输申报功能")
 @RestController
-@RequestMapping("/cargo")
+@RequestMapping("/api/cargo")
 @RequiredArgsConstructor
 public class CargoDeclarationController {
 
@@ -23,28 +25,36 @@ public class CargoDeclarationController {
     @Operation(summary = "分页查询我的申报记录")
     @GetMapping("/my")
     public Result<PageResult<CargoDeclaration>> getMyDeclarations(
+        HttpServletRequest request,
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String status) {
-        return Result.success(cargoDeclarationService.getMyDeclarations(page, size, status));
+        Long userId = (Long) request.getAttribute("userId");
+        return Result.success(cargoDeclarationService.getMyDeclarations(userId, page, size, status));
     }
 
     @Operation(summary = "获取申报详情")
     @GetMapping("/{id}")
-    public Result<CargoDeclaration> getDeclaration(@PathVariable("id") Integer declarationId) {
-        return Result.success(cargoDeclarationService.getById(declarationId));
+    public Result<CargoDeclaration> getDeclaration(@PathVariable("id") Integer declarationId,
+                                                   HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        return Result.success(cargoDeclarationService.getMyDeclaration(userId, declarationId));
     }
 
     @Operation(summary = "提交货物申报")
     @PostMapping
-    public Result<CargoDeclaration> submitDeclaration(@RequestBody CargoDeclaration declaration) {
-        return Result.success(cargoDeclarationService.submit(declaration));
+    public Result<CargoDeclaration> submitDeclaration(@RequestBody CargoDeclaration declaration,
+                                                      HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        return Result.success(cargoDeclarationService.submit(userId, declaration));
     }
 
     @Operation(summary = "取消申报")
     @PostMapping("/{id}/cancel")
-    public Result<Void> cancelDeclaration(@PathVariable("id") Integer declarationId) {
-        cargoDeclarationService.cancel(declarationId);
+    public Result<Void> cancelDeclaration(@PathVariable("id") Integer declarationId,
+                                          HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        cargoDeclarationService.cancel(userId, declarationId);
         return Result.success();
     }
 

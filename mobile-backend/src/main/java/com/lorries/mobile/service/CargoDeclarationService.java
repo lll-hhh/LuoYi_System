@@ -8,13 +8,13 @@ import com.lorries.mobile.entity.CargoDeclaration;
  */
 public interface CargoDeclarationService {
 
-    PageResult<CargoDeclaration> getMyDeclarations(Integer page, Integer size, String status);
+    PageResult<CargoDeclaration> getMyDeclarations(Long userId, Integer page, Integer size, String status);
 
-    CargoDeclaration getById(Integer declarationId);
+    CargoDeclaration getMyDeclaration(Long userId, Integer declarationId);
 
-    CargoDeclaration submit(CargoDeclaration declaration);
+    CargoDeclaration submit(Long userId, CargoDeclaration declaration);
 
-    void cancel(Integer declarationId);
+    void cancel(Long userId, Integer declarationId);
 
     void updateStatus(Integer declarationId, String status);
 }

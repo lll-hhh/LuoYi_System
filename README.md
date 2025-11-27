@@ -47,11 +47,18 @@
 <tr>
 <td width="50%">
 
-### 🛣️ 道路监控管理
-- 道路信息管理（路段、路口）
-- 摄像头接入与视频流管理
-- 实时交通流量监测
-- 交通事件告警与处理
+cd algorithm-service
+# 构建镜像（可增量）
+docker build -t luoyi-algorithm:dev .
+
+# 运行容器并映射端口
+docker run --rm -it \
+  -p 8090:8090 \
+  --name luoyi-algorithm-dev \
+  luoyi-algorithm:dev
+
+# 或使用 docker-compose 热重载开发
+# docker-compose up algorithm-service --build
 
 ### 📦 仓储管理
 - 多仓库、多库区管理
@@ -220,6 +227,9 @@ cd LuoYi_System
 
 # 启动所有服务
 docker-compose up -d
+
+# 仅启动算法服务（Python 只能在容器中运行）
+docker-compose up -d algorithm-service
 
 # 查看服务状态
 docker-compose ps

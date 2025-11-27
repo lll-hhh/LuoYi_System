@@ -1,0 +1,42 @@
+# Grafana数据源配置
+# 络绎智慧交通管理系统
+
+apiVersion: 1
+
+datasources:
+  # Prometheus数据源
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false
+    jsonData:
+      httpMethod: POST
+      manageAlerts: true
+      prometheusType: Prometheus
+      prometheusVersion: 2.47.0
+
+  # PostgreSQL数据源
+  - name: PostgreSQL
+    type: postgres
+    uid: postgresql
+    url: postgres:5432
+    user: postgres
+    database: lorries_hub
+    secureJsonData:
+      password: postgres
+    jsonData:
+      sslmode: disable
+      maxOpenConns: 10
+      maxIdleConns: 5
+      connMaxLifetime: 14400
+    editable: false
+
+  # Redis数据源 (需要安装redis-datasource插件)
+  - name: Redis
+    type: redis-datasource
+    uid: redis
+    url: redis:6379
+    editable: false

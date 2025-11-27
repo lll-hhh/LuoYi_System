@@ -94,3 +94,66 @@ export function deleteCamera(id: number) {
     method: 'delete'
   })
 }
+
+// 获取路口详情
+export function getJunctionDetail(id: number) {
+  return request({
+    url: `/api/junctions/${id}`,
+    method: 'get'
+  })
+}
+
+// 创建路口
+export function createJunction(data: any) {
+  return request({
+    url: '/api/junctions',
+    method: 'post',
+    data
+  })
+}
+
+// 更新路口
+export function updateJunction(id: number, data: any) {
+  return request({
+    url: `/api/junctions/${id}`,
+    method: 'put',
+    data
+  })
+}
+
+// 删除路口
+export function deleteJunction(id: number) {
+  return request({
+    url: `/api/junctions/${id}`,
+    method: 'delete'
+  })
+}
+
+// 更新信号灯配时
+export function updateSignalTiming(id: number, data: any) {
+  return request({
+    url: `/api/junctions/${id}/signal-timing`,
+    method: 'put',
+    data
+  })
+}
+
+// 导出为统一对象
+export const trafficApi = {
+  getRoadList,
+  getRoadDetail,
+  createRoad,
+  updateRoad,
+  deleteRoad,
+  getJunctionList,
+  getJunctionDetail,
+  createJunction,
+  updateJunction,
+  deleteJunction,
+  updateSignalTiming,
+  getCameraList,
+  getCameraDetail,
+  createCamera,
+  updateCamera,
+  deleteCamera
+}

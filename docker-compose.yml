@@ -191,7 +191,7 @@ services:
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
     ports:
-      - "${ALGORITHM_SERVICE_PORT}:8080"
+      - "${ALGORITHM_SERVICE_PORT}:8090"
     networks:
       - lorries-network
     depends_on:
@@ -235,6 +235,123 @@ services:
       - web-frontend
     restart: unless-stopped
 
+  # RTMP/HLS 视频流服务器
+  rtmp-server:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile.rtmp
+    container_name: lorries-rtmp-server
+    volumes:
+      - rtmp-hls-data:/var/www/hls
+      - rtmp-recordings:/var/www/recordings
+    ports:
+      - "1935:1935"    # RTMP推流端口
+      - "8088:8088"    # HLS播放端口
+    networks:
+      - lorries-network
+    depends_on:
+      - hub-backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # ==================== 监控 ====================
+  
+  # Prometheus 监控采集
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: lorries-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - lorries-network
+    depends_on:
+      - hub-backend
+      - mobile-backend
+    restart: unless-stopped
+
+  # Grafana 可视化仪表板
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: lorries-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - lorries-network
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # PostgreSQL Exporter
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.14.0
+    container_name: lorries-postgres-exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${HUB_DB_USER}:${HUB_DB_PASSWORD}@hub-postgres:5432/${HUB_DB_NAME}?sslmode=disable"
+    ports:
+      - "9187:9187"
+    networks:
+      - lorries-network
+    depends_on:
+      hub-postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Redis Exporter
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.55.0
+    container_name: lorries-redis-exporter
+    environment:
+      REDIS_ADDR: "redis:6379"
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
+    ports:
+      - "9121:9121"
+    networks:
+      - lorries-network
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Alertmanager 告警管理
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: lorries-alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    volumes:
+      - ./monitoring/alertmanager:/etc/alertmanager:ro
+    ports:
+      - "9093:9093"
+    networks:
+      - lorries-network
+    restart: unless-stopped
+
 # ==================== 网络 ====================
 networks:
   lorries-network:
@@ -247,3 +364,8 @@ volumes:
   redis-data:
   rabbitmq-data:
   minio-data:
+  rtmp-hls-data:
+  rtmp-recordings:
+  prometheus-data:
+  grafana-data:
+  alertmanager-data:

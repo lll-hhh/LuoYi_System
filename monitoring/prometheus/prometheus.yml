@@ -1,0 +1,128 @@
+# Prometheus配置文件
+# 络绎智慧交通管理系统 - 监控采集配置
+
+global:
+  scrape_interval: 15s          # 默认采集间隔
+  evaluation_interval: 15s       # 规则评估间隔
+  scrape_timeout: 10s           # 采集超时
+
+  external_labels:
+    monitor: 'lorries-monitor'
+    environment: 'production'
+
+# 告警管理器配置
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# 规则文件
+rule_files:
+  - '/etc/prometheus/rules/*.yml'
+
+# 采集配置
+scrape_configs:
+  # Prometheus自监控
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    metrics_path: /metrics
+    scheme: http
+
+  # Hub后端服务监控
+  - job_name: 'hub-backend'
+    metrics_path: '/api/hub/actuator/prometheus'
+    static_configs:
+      - targets: ['hub-backend:8081']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'hub-backend'
+
+  # Mobile后端服务监控
+  - job_name: 'mobile-backend'
+    metrics_path: '/api/mobile/actuator/prometheus'
+    static_configs:
+      - targets: ['mobile-backend:8082']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'mobile-backend'
+
+  # 算法服务监控
+  - job_name: 'algorithm-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['algorithm-service:8090']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'algorithm-service'
+
+  # PostgreSQL数据库监控
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'postgresql'
+
+  # Redis监控
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'redis'
+
+  # RabbitMQ监控
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15692']
+    metrics_path: /metrics
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'rabbitmq'
+
+  # MinIO监控
+  - job_name: 'minio'
+    metrics_path: /minio/v2/metrics/cluster
+    scheme: http
+    static_configs:
+      - targets: ['minio:9000']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'minio'
+
+  # Nginx RTMP监控
+  - job_name: 'nginx-rtmp'
+    static_configs:
+      - targets: ['nginx-rtmp:8080']
+    metrics_path: /stat
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'nginx-rtmp'
+
+  # Node Exporter - 系统指标
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'node'
+
+  # cAdvisor - Docker容器指标
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'cadvisor'

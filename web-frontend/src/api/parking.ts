@@ -95,3 +95,95 @@ export function calculateFee(recordId: number) {
     method: 'get'
   })
 }
+
+// 获取车位列表
+export function getSpaceList(lotId: number, params?: any) {
+  return request({
+    url: `/api/parking-lots/${lotId}/spaces`,
+    method: 'get',
+    params
+  })
+}
+
+// 获取车位详情
+export function getSpaceDetail(lotId: number, spaceId: number) {
+  return request({
+    url: `/api/parking-lots/${lotId}/spaces/${spaceId}`,
+    method: 'get'
+  })
+}
+
+// 更新车位状态
+export function updateSpaceStatus(lotId: number, spaceId: number, status: string) {
+  return request({
+    url: `/api/parking-lots/${lotId}/spaces/${spaceId}/status`,
+    method: 'put',
+    data: { status }
+  })
+}
+
+// 预约车位
+export function reserveSpace(lotId: number, spaceId: number, data: any) {
+  return request({
+    url: `/api/parking-lots/${lotId}/spaces/${spaceId}/reserve`,
+    method: 'post',
+    data
+  })
+}
+
+// 取消预约
+export function cancelReservation(lotId: number, spaceId: number) {
+  return request({
+    url: `/api/parking-lots/${lotId}/spaces/${spaceId}/cancel-reservation`,
+    method: 'post'
+  })
+}
+
+// 获取停车记录列表
+export function getRecordList(params?: any) {
+  return request({
+    url: '/api/parking-records',
+    method: 'get',
+    params
+  })
+}
+
+// 获取实时统计
+export function getRealtimeStats() {
+  return request({
+    url: '/api/parking/realtime-stats',
+    method: 'get'
+  })
+}
+
+// 获取收入统计
+export function getRevenueStats(params?: any) {
+  return request({
+    url: '/api/parking/revenue-stats',
+    method: 'get',
+    params
+  })
+}
+
+// 导出为统一对象
+export const parkingApi = {
+  getParkingLotList,
+  getParkingLotDetail,
+  createParkingLot,
+  updateParkingLot,
+  deleteParkingLot,
+  getParkingSpaceList,
+  getParkingRecordList,
+  vehicleEntry,
+  vehicleExit,
+  getFeeRules,
+  calculateFee,
+  getSpaceList,
+  getSpaceDetail,
+  updateSpaceStatus,
+  reserveSpace,
+  cancelReservation,
+  getRecordList,
+  getRealtimeStats,
+  getRevenueStats
+}

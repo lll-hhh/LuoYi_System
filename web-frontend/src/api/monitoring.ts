@@ -86,3 +86,114 @@ export function detectAnomaly(data: any) {
     data
   })
 }
+
+// 创建异常事件
+export function createAnomaly(data: any) {
+  return request({
+    url: '/api/monitoring/anomalies',
+    method: 'post',
+    data
+  })
+}
+
+// 更新异常事件
+export function updateAnomaly(id: number, data: any) {
+  return request({
+    url: `/api/monitoring/anomalies/${id}`,
+    method: 'put',
+    data
+  })
+}
+
+// 处理异常事件（分配）
+export function processAnomaly(id: number, data: any) {
+  return request({
+    url: `/api/monitoring/anomalies/${id}/process`,
+    method: 'post',
+    data
+  })
+}
+
+// 解决异常事件
+export function resolveAnomaly(id: number, data: any) {
+  return request({
+    url: `/api/monitoring/anomalies/${id}/resolve`,
+    method: 'post',
+    data
+  })
+}
+
+// 关闭异常事件
+export function closeAnomaly(id: number) {
+  return request({
+    url: `/api/monitoring/anomalies/${id}/close`,
+    method: 'post'
+  })
+}
+
+// 获取告警规则列表
+export function getAlertRules() {
+  return request({
+    url: '/api/monitoring/alert-rules',
+    method: 'get'
+  })
+}
+
+// 创建告警规则
+export function createAlertRule(data: any) {
+  return request({
+    url: '/api/monitoring/alert-rules',
+    method: 'post',
+    data
+  })
+}
+
+// 更新告警规则
+export function updateAlertRule(id: number, data: any) {
+  return request({
+    url: `/api/monitoring/alert-rules/${id}`,
+    method: 'put',
+    data
+  })
+}
+
+// 删除告警规则
+export function deleteAlertRule(id: number) {
+  return request({
+    url: `/api/monitoring/alert-rules/${id}`,
+    method: 'delete'
+  })
+}
+
+// 切换告警规则状态
+export function toggleAlertRule(id: number, enabled: boolean) {
+  return request({
+    url: `/api/monitoring/alert-rules/${id}/toggle`,
+    method: 'post',
+    data: { enabled }
+  })
+}
+
+// 导出为统一对象
+export const monitoringApi = {
+  getRealtimeData,
+  getTrafficFlow,
+  getAnomalyList,
+  getAnomalyDetail,
+  handleAnomaly,
+  getCameraStream,
+  getHistoryVideo,
+  detectVehicles,
+  recognizePlate,
+  detectAnomaly,
+  createAnomaly,
+  updateAnomaly,
+  processAnomaly,
+  resolveAnomaly,
+  closeAnomaly,
+  getAlertRules,
+  createAlertRule,
+  updateAlertRule,
+  deleteAlertRule,
+  toggleAlertRule
+}

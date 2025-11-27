@@ -1,0 +1,177 @@
+# Prometheus告警规则
+# 络绎智慧交通管理系统 - 告警配置
+
+groups:
+  # 服务可用性告警
+  - name: service_availability
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "服务 {{ $labels.job }} 不可用"
+          description: "服务 {{ $labels.instance }} 已经宕机超过1分钟"
+
+      - alert: HighErrorRate
+        expr: rate(http_server_requests_seconds_count{status=~"5.."}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "高错误率警告"
+          description: "服务 {{ $labels.job }} 5xx错误率超过10%"
+
+  # 资源使用告警
+  - name: resource_usage
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU使用率过高"
+          description: "实例 {{ $labels.instance }} CPU使用率超过80%"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "内存使用率过高"
+          description: "实例 {{ $labels.instance }} 内存使用率超过85%"
+
+      - alert: HighDiskUsage
+        expr: (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "磁盘使用率过高"
+          description: "实例 {{ $labels.instance }} 磁盘使用率超过85%"
+
+  # JVM告警 (Spring Boot应用)
+  - name: jvm_alerts
+    rules:
+      - alert: JvmHeapMemoryHigh
+        expr: jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"} > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "JVM堆内存使用率过高"
+          description: "应用 {{ $labels.job }} 堆内存使用率超过80%"
+
+      - alert: JvmGcPauses
+        expr: rate(jvm_gc_pause_seconds_sum[5m]) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "GC暂停时间过长"
+          description: "应用 {{ $labels.job }} GC暂停时间过长"
+
+  # 数据库告警
+  - name: database_alerts
+    rules:
+      - alert: PostgresqlDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL数据库不可用"
+          description: "PostgreSQL数据库已经宕机超过1分钟"
+
+      - alert: PostgresqlHighConnections
+        expr: sum(pg_stat_activity_count) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL连接数过高"
+          description: "PostgreSQL当前连接数超过100"
+
+      - alert: PostgresqlDeadlocks
+        expr: rate(pg_stat_database_deadlocks[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL死锁检测"
+          description: "PostgreSQL数据库检测到死锁"
+
+  # Redis告警
+  - name: redis_alerts
+    rules:
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis不可用"
+          description: "Redis服务已经宕机超过1分钟"
+
+      - alert: RedisHighMemory
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis内存使用率过高"
+          description: "Redis内存使用率超过80%"
+
+  # RabbitMQ告警
+  - name: rabbitmq_alerts
+    rules:
+      - alert: RabbitmqQueuePiling
+        expr: rabbitmq_queue_messages > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RabbitMQ队列堆积"
+          description: "队列 {{ $labels.queue }} 消息堆积超过1000条"
+
+      - alert: RabbitmqNoConsumers
+        expr: rabbitmq_queue_consumers == 0 and rabbitmq_queue_messages > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RabbitMQ队列无消费者"
+          description: "队列 {{ $labels.queue }} 有消息但无消费者"
+
+  # 业务指标告警
+  - name: business_alerts
+    rules:
+      - alert: HighTrafficCongestion
+        expr: avg(traffic_congestion_index) > 3.5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "交通拥堵指数过高"
+          description: "系统平均交通拥堵指数超过3.5"
+
+      - alert: CameraOffline
+        expr: camera_online_count / camera_total_count < 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "摄像头离线率过高"
+          description: "摄像头在线率低于90%"
+
+      - alert: AnomalyEventSpike
+        expr: rate(anomaly_events_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "异常事件激增"
+          description: "异常事件发生率激增"

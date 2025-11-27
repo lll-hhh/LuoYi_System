@@ -1,6 +1,8 @@
 """
 算法服务单元测试
 """
+from datetime import datetime, timedelta
+
 import pytest
 from fastapi.testclient import TestClient
 from main import app
@@ -192,6 +194,70 @@ class TestModelManagement:
             assert data is not None
         else:
             pytest.skip("Model status endpoint not implemented")
+
+
+class TestAdvancedAlgorithms:
+    """高级算法接口测试"""
+
+    def test_multistop_route(self):
+        response = client.post(
+            "/api/route/multistop",
+            json={
+                "depot": {"lat": 39.9, "lng": 116.4},
+                "stops": [
+                    {"id": "S1", "lat": 39.91, "lng": 116.41, "priority": 2},
+                    {"id": "S2", "lat": 39.92, "lng": 116.42, "priority": 1}
+                ],
+                "traffic_index": 1.1
+            }
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert "best_plan" in data
+
+    def test_dispatch_optimize(self):
+        response = client.post(
+            "/api/dispatch/optimize",
+            json={
+                "drivers": [
+                    {"id": "D1", "name": "张三", "skills": ["冷链"], "location": {"lat": 39.9, "lng": 116.4}, "capacity": 3},
+                    {"id": "D2", "name": "李四", "skills": ["普货"], "location": {"lat": 39.95, "lng": 116.45}, "capacity": 2}
+                ],
+                "tasks": [
+                    {"id": "T1", "required_skill": "冷链", "priority": 5, "location": {"lat": 39.91, "lng": 116.41}, "estimated_duration": 60},
+                    {"id": "T2", "required_skill": "普货", "priority": 3, "location": {"lat": 39.96, "lng": 116.46}, "estimated_duration": 40}
+                ]
+            }
+        )
+        assert response.status_code == 200
+        assert response.json()["success"] is True
+
+    def test_timeseries_anomaly(self):
+        base_time = datetime.utcnow()
+        series = [
+            {"timestamp": (base_time + timedelta(minutes=5 * i)).isoformat(), "value": float(i)}
+            for i in range(12)
+        ]
+        series.append({"timestamp": (base_time + timedelta(minutes=60)).isoformat(), "value": 50.0})
+        response = client.post(
+            "/api/anomaly/timeseries",
+            json={"series": series, "window": 6}
+        )
+        assert response.status_code == 200
+        assert "spikes" in response.json()
+
+    def test_demand_forecast(self):
+        response = client.post(
+            "/api/demand/forecast",
+            json={
+                "series": [120, 130, 128, 140, 150, 148, 160, 170],
+                "periods": 4,
+                "season_length": 4
+            }
+        )
+        assert response.status_code == 200
+        assert "forecast" in response.json()
 
 
 if __name__ == "__main__":
