@@ -22,4 +22,13 @@ public interface VehicleMapper extends BaseMapper<Vehicle> {
             ORDER BY v.is_default DESC, v.created_at DESC
             """)
     List<Vehicle> findByUserId(@Param("userId") Integer userId);
+
+    @Select("""
+            SELECT * FROM vehicle WHERE user_id = #{userId}
+            ORDER BY is_default DESC, created_at DESC
+            """)
+    List<Vehicle> selectByUserId(@Param("userId") Long userId);
+
+    @Select("SELECT * FROM vehicle WHERE plate_number = #{plateNumber}")
+    Vehicle selectByPlateNumber(@Param("plateNumber") String plateNumber);
 }

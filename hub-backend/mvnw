@@ -1,0 +1,19 @@
+#!/bin/sh
+# Maven Wrapper script for Hub Backend
+
+# Download maven wrapper if not exists
+if [ ! -f ".mvn/wrapper/maven-wrapper.jar" ]; then
+    mkdir -p .mvn/wrapper
+    echo "Downloading Maven Wrapper..."
+    curl -s -o .mvn/wrapper/maven-wrapper.jar \
+        https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.2.0/maven-wrapper-3.2.0.jar
+fi
+
+# Set Maven version
+MAVEN_VERSION=3.9.6
+
+# Execute Maven with wrapper
+exec java \
+    -Dmaven.multiModuleProjectDirectory="$PWD" \
+    -classpath .mvn/wrapper/maven-wrapper.jar \
+    org.apache.maven.wrapper.MavenWrapperMain "$@"

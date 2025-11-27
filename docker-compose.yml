@@ -1,4 +1,5 @@
-version: '3.8'
+# 络绎智慧交通管理系统 - Docker Compose 配置
+# Lorries Intelligent Transportation Management System
 
 services:
   # ==================== 数据库 ====================

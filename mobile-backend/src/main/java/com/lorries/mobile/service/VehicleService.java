@@ -11,6 +11,10 @@ public interface VehicleService {
 
     List<Vehicle> getMyVehicles();
 
+    List<Vehicle> findByUserId(Long userId);
+
+    Vehicle findByPlateNumber(String plateNumber);
+
     Boolean addVehicle(Vehicle vehicle);
 
     Boolean updateVehicle(Vehicle vehicle);
